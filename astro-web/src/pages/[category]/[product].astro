@@ -1,0 +1,60 @@
+---
+import Base from '@/layouts/Base.astro';
+import Seo from '@/components/seo/Seo.astro';
+import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';
+import { listAllProductsForSeo } from '@/lib/queries/products';
+import { buildProductPath, parseProductSlug, appUrl, shortIdFromUuid } from '@/lib/urls';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const all = await listAllProductsForSeo();
+  return all.map((p) => {
+    const path = buildProductPath({ id: p.id, slug: p.slug, name: p.name, categorySlug: p.category_slug });
+    const [, category, product] = path.split('/');
+    return { params: { category, product }, props: { product: p } };
+  });
+}
+
+const { product: p } = Astro.props as { product: any };
+const parsed = parseProductSlug(Astro.params.product!);
+const path = buildProductPath({ id: p.id, slug: p.slug, name: p.name, categorySlug: p.category_slug });
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: p.name,
+  description: p.description,
+  sku: shortIdFromUuid(p.id),
+  image: p.image_url ? [p.image_url] : undefined,
+  offers: p.min_price ? {
+    '@type': 'AggregateOffer',
+    priceCurrency: p.currency || 'NGN',
+    lowPrice: p.min_price,
+    availability: 'https://schema.org/InStock',
+    url: `${import.meta.env.PUBLIC_SITE_URL}${path}`,
+  } : undefined,
+};
+---
+<Base>
+  <Seo slot="head"
+    title={`${p.name} — price & suppliers | ShieldVase`}
+    description={(p.description || `Buy ${p.name} from verified Nigerian suppliers on ShieldVase.`).slice(0, 155)}
+    path={path}
+    type="product"
+    image={p.image_url || undefined}
+    jsonLd={jsonLd} />
+  <article class="mx-auto max-w-4xl px-4 py-10">
+    <Breadcrumbs items={[
+      { name: 'Home', href: '/' },
+      { name: p.category_slug, href: `/${p.category_slug}` },
+      { name: p.name, href: path },
+    ]} />
+    <h1 class="mt-4 text-3xl font-bold">{p.name}</h1>
+    {p.description && <p class="mt-4 text-slate-600 whitespace-pre-line">{p.description}</p>}
+    <div class="mt-8 flex gap-3">
+      <a href={appUrl(path)} class="rounded bg-brand text-white px-5 py-2.5 font-medium">View suppliers & buy</a>
+      <a href={appUrl('/rfq')} class="rounded border border-slate-300 px-5 py-2.5">Request quote</a>
+    </div>
+  </article>
+</Base>

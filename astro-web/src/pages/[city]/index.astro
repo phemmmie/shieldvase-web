@@ -1,0 +1,44 @@
+---
+import Base from '@/layouts/Base.astro';
+import Seo from '@/components/seo/Seo.astro';
+import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';
+import { listCities, getCity } from '@/lib/queries/cities';
+import { listTopCategories } from '@/lib/queries/categories';
+
+export const prerender = true;
+export async function getStaticPaths() {
+  return listCities().map((c) => ({ params: { city: c.slug } }));
+}
+
+const city = getCity(Astro.params.city!);
+if (!city) return Astro.redirect('/404');
+const cats = await listTopCategories();
+
+const jsonLd = {
+  '@context': 'https://schema.org', '@type': 'LocalBusiness',
+  name: `ShieldVase ${city.name}`,
+  address: { '@type': 'PostalAddress', addressLocality: city.name, addressRegion: city.state, addressCountry: 'NG' },
+  url: `${import.meta.env.PUBLIC_SITE_URL}/${city.slug}`,
+};
+---
+<Base>
+  <Seo slot="head"
+    title={`Building materials & industrial suppliers in ${city.name} | ShieldVase`}
+    description={`Compare verified suppliers of construction, chemical, polymer, energy and agriculture products delivering in ${city.name}, ${city.state}.`}
+    path={`/${city.slug}`}
+    jsonLd={jsonLd} />
+  <section class="mx-auto max-w-6xl px-4 py-10">
+    <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: city.name, href: `/${city.slug}` }]} />
+    <h1 class="mt-4 text-3xl font-bold">Suppliers in {city.name}</h1>
+    <p class="mt-2 text-slate-600">Explore by category:</p>
+    <ul class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {cats.map((c) => (
+        <li>
+          <a href={`/${city.slug}/${c.slug}`} class="block rounded-lg border border-slate-200 p-4 hover:border-brand">
+            <span class="font-medium">{c.name} in {city.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>

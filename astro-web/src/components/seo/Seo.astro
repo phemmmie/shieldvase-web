@@ -1,0 +1,38 @@
+---
+// Universal SEO head. One component per page, drives every crawler-facing tag.
+export interface Props {
+  title: string;                 // <60 chars
+  description: string;           // <160 chars
+  path: string;                  // e.g. "/cement/dangote-42-5r-p-a1b2c3"
+  image?: string;                // absolute OG image URL
+  type?: 'website' | 'article' | 'product';
+  noindex?: boolean;
+  jsonLd?: Record<string, any> | Record<string, any>[];
+}
+
+const site = import.meta.env.PUBLIC_SITE_URL;
+const { title, description, path, image, type = 'website', noindex, jsonLd } = Astro.props;
+const url = `${site}${path.startsWith('/') ? path : `/${path}`}`;
+const og = image || `${site}/og-default.jpg`;
+const blocks = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+---
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={url} />
+{noindex && <meta name="robots" content="noindex,nofollow" />}
+
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content="ShieldVase" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={url} />
+<meta property="og:image" content={og} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={og} />
+
+{blocks.map((b) => (
+  <script type="application/ld+json" set:html={JSON.stringify(b)} />
+))}

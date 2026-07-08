@@ -1,0 +1,32 @@
+---
+import Base from '@/layouts/Base.astro';
+import Seo from '@/components/seo/Seo.astro';
+import { listTopCategories } from '@/lib/queries/categories';
+export const prerender = true;
+const cats = await listTopCategories();
+---
+<Base>
+  <Seo
+    slot="head"
+    title="ShieldVase — B2B marketplace for raw materials & industrial solutions"
+    description="Africa's B2B marketplace for construction materials, chemicals, polymers, energy and agriculture. Transparent pricing, verified suppliers, financing built in."
+    path="/"
+  />
+  <section class="mx-auto max-w-6xl px-4 pt-16 pb-24">
+    <h1 class="text-4xl md:text-5xl font-bold tracking-tight max-w-3xl">
+      Raw materials and industrial solutions, priced transparently.
+    </h1>
+    <p class="mt-4 text-lg text-slate-600 max-w-2xl">
+      Compare verified vendors across five industries, lock in prices, and pay with
+      built-in trade credit. Everything Nigerian buyers and contractors need in one place.
+    </p>
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {cats.map((c) => (
+        <a href={`/${c.slug}`} class="rounded-xl border border-slate-200 p-5 hover:border-brand hover:shadow-sm transition">
+          <div class="font-semibold text-brand-ink">{c.name}</div>
+          <div class="mt-1 text-sm text-slate-500 line-clamp-2">{c.description}</div>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>

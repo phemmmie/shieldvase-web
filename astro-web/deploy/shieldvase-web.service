@@ -1,0 +1,18 @@
+[Unit]
+Description=ShieldVase Web (Astro Node standalone)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/shieldvase-web
+EnvironmentFile=/var/www/shieldvase-web/.env
+ExecStart=/usr/bin/node ./dist/server/entry.mjs
+Restart=on-failure
+RestartSec=3
+# Astro Node standalone listens on HOST:PORT from env
+Environment=HOST=127.0.0.1
+Environment=PORT=4321
+
+[Install]
+WantedBy=multi-user.target

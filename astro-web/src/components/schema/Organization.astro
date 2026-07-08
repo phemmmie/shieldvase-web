@@ -1,0 +1,22 @@
+---
+const site = import.meta.env.PUBLIC_SITE_URL;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org', '@type': 'Organization',
+    name: 'ShieldVase', url: site,
+    logo: 'https://shieldvase-bronze-images.s3.eu-north-1.amazonaws.com/static/assets/ShieldVase%20Logo.ico',
+    description: 'Global B2B2C marketplace for raw materials and industrial solutions.',
+    sameAs: [],
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'WebSite',
+    name: 'ShieldVase', url: site,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${site}/search?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  },
+];
+---
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
