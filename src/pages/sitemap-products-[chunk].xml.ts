@@ -1,8 +1,18 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute, GetStaticPaths } from 'astro';
 import { listAllProductsForSeo } from '@/lib/queries/products';
 import { buildProductPath } from '@/lib/urls';
 
 const CHUNK = 45000;
+
+// Prerendered dynamic route: emit one sitemap file per chunk. The chunk count
+// must match the entries listed in sitemap-index.xml.ts.
+export const getStaticPaths: GetStaticPaths = async () => {
+  const products = await listAllProductsForSeo();
+  const productChunks = Math.max(1, Math.ceil(products.length / CHUNK));
+  return Array.from({ length: productChunks }, (_, i) => ({
+    params: { chunk: String(i + 1) },
+  }));
+};
 
 export const GET: APIRoute = async ({ params, site }) => {
   const origin = site?.toString().replace(/\/$/, '') || 'https://shieldvase.io';
